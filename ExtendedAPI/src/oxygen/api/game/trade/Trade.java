@@ -2,6 +2,7 @@ package oxygen.api.game.trade;
 
 import oxygen.api.InterfaceAddress;
 import oxygen.api.accessors.Interfaces;
+import oxygen.api.commons.ArrayCommons;
 import oxygen.api.commons.NumberCommons;
 import oxygen.api.commons.StringCommons;
 import oxygen.api.containers.Inventory;
@@ -9,6 +10,7 @@ import oxygen.api.wrappers.InterfaceComponent;
 import oxygen.api.wrappers.Item;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class Trade {
@@ -41,6 +43,7 @@ public class Trade {
         }
     }
 
+
     private static final int FIRST_TRADE_WINDOW_GROUP = 335;
     private static final int SECOND_TRADE_WINDOW_GROUP = 334;
 
@@ -58,6 +61,7 @@ public class Trade {
         return false;
     }
 
+
     private static final InterfaceAddress FIRST_SCREEN_ACCEPT_BUTTON = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, comp ->
             comp.hasAction("Accept"));
 
@@ -69,6 +73,7 @@ public class Trade {
         return acceptButton != null && acceptButton.interact("Accept");
     }
 
+
     private static final InterfaceAddress FIRST_SCREEN_DECLINE_BUTTON = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, comp ->
             comp.hasAction("Decline"));
 
@@ -79,6 +84,7 @@ public class Trade {
         InterfaceComponent declineButton = Trade.isOpen(Screen.FIRST) ? FIRST_SCREEN_DECLINE_BUTTON.lookup() : SECOND_SCREEN_DECLINE_BUTTON.lookup();
         return declineButton != null && declineButton.interact("Decline");
     }
+
 
     // TODO: Do by InterfaceAddress instead of predicate? InterfaceAddress didn't update before. Do by checking comp.getText(message)?
     private static final Predicate<InterfaceComponent> FIRST_SCREEN_WE_ACCEPTED_PRED = comp ->
@@ -103,29 +109,30 @@ public class Trade {
         return false;
     }
 
+
     private static final String INVENTORY_ITEM_ACTION_TAG = "<col=ff9040>"; // TODO: Do this better
 
-    private static boolean offer(Item item, OfferAction amount) {
-        if (item == null || amount == null) {
+    private static boolean offer(Item item, OfferAction action) {
+        if (item == null || action == null) {
             return false;
         }
         InterfaceComponent itemComp = TradeInventory.getAt(item.getIndex());
         if (itemComp == null) {
             return false;
         }
-        return itemComp.interact(amount.getAction() + INVENTORY_ITEM_ACTION_TAG);
+        return itemComp.interact(action.getAction() + INVENTORY_ITEM_ACTION_TAG);
     }
 
-    public static boolean offer(String name, OfferAction amount) {
-        return offer(Inventory.getFirst(name), amount);
+    public static boolean offer(String name, OfferAction action) {
+        return offer(Inventory.getFirst(name), action);
     }
 
-    public static boolean offer(int id, OfferAction amount) {
-        return offer(Inventory.getFirst(id), amount);
+    public static boolean offer(int id, OfferAction action) {
+        return offer(Inventory.getFirst(id), action);
     }
 
-    public static boolean offer(Predicate<Item> predicate, OfferAction amount) {
-        return offer(Inventory.getFirst(predicate), amount);
+    public static boolean offer(Predicate<Item> predicate, OfferAction action) {
+        return offer(Inventory.getFirst(predicate), action);
     }
 
     public static boolean offerAll(String name) {
@@ -153,23 +160,104 @@ public class Trade {
     }
 
 
+    private static final int OUR_OFFER_ITEMS_CHILD_INDEX = 25;
+    private static final int THEIR_OFFER_ITEMS_CHILD_INDEX = 28;
 
-    //335, 28, <child> is their items
-    //335, 25 <child> your items
+    private static final InterfaceAddress OUR_OFFER_ITEMS = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, OUR_OFFER_ITEMS_CHILD_INDEX);
+    private static final InterfaceAddress THEIR_OFFER_ITEMS = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, THEIR_OFFER_ITEMS_CHILD_INDEX);
 
-
-    public static boolean getCount(String item) {
-        return false; // TODO: Implement
+    private static InterfaceComponent[] getItemComponents(Party party) {
+        InterfaceComponent parent = party == Party.ME ? OUR_OFFER_ITEMS.lookup() : THEIR_OFFER_ITEMS.lookup();
+        if (parent != null) {
+            return Arrays.stream(parent.getChildren())
+                    .filter(comp -> comp.getItemID() != -1)
+                    .toArray(InterfaceComponent[]::new);
+        }
+        return new InterfaceComponent[0];
     }
-//
-//    public static boolean contains(String item) {
-//        return false; // TODO: Implement
-//    }
-//
-//    public static boolean containsAnyExcept(String item) {
-//        return false; // TODO: Implement
-//    }
 
+    private static InterfaceComponent[] getItemComponents() {
+        return ArrayCommons.concatenate(getItemComponents(Party.ME), getItemComponents(Party.THEM));
+    }
+
+    private static InterfaceComponent getItemComponent(String name, Party party) {
+        for (InterfaceComponent itemComp : getItemComponents(party)) {
+            if (StringCommons.replaceColorTag(itemComp.getName()).equals(name)) {
+                return itemComp;
+            }
+        }
+        return null;
+    }
+
+    private static InterfaceComponent getItemComponent(int id, Party party) {
+        for (InterfaceComponent itemComp : getItemComponents(party)) {
+            if (itemComp.getItemID() == id) {
+                return itemComp;
+            }
+        }
+        return null;
+    }
+
+    private static InterfaceComponent[] getItemComponents(String name) {
+        InterfaceComponent[] itemComps = new InterfaceComponent[] { getItemComponent(name, Party.ME), getItemComponent(name, Party.THEM) };
+        return Arrays.stream(itemComps)
+                .filter(Objects::nonNull)
+                .toArray(InterfaceComponent[]::new);
+    }
+
+    private static InterfaceComponent[] getItemComponents(int id) {
+        InterfaceComponent[] itemComps = new InterfaceComponent[] { getItemComponent(id, Party.ME), getItemComponent(id, Party.THEM) };
+        return Arrays.stream(itemComps)
+                .filter(Objects::nonNull)
+                .toArray(InterfaceComponent[]::new);
+    }
+
+    private static int getCount(InterfaceComponent[] itemComps) {
+        int count = 0;
+        for (InterfaceComponent itemComp : itemComps) {
+            count += Math.max(0, itemComp.getItemCount());
+        }
+        return count;
+    }
+
+    private static int getCount(InterfaceComponent itemComp) {
+        if (itemComp == null) {
+            return 0;
+        }
+        return Math.max(0, itemComp.getItemCount());
+    }
+
+    public static int getCount(String name) {
+        return getCount(getItemComponents(name));
+    }
+
+    public static int getCount(int id) {
+        return getCount(getItemComponents(id));
+    }
+
+    public static int getCount(String name, Party party) {
+        return getCount(getItemComponent(name, party));
+    }
+
+    public static int getCount(int id, Party party) {
+        return getCount(getItemComponent(id, party));
+    }
+
+    public static boolean contains(String name) {
+        return getItemComponent(name, Party.ME) != null || getItemComponent(name, Party.THEM) != null;
+    }
+
+    public static boolean contains(int id) {
+        return getItemComponent(id, Party.ME) != null || getItemComponent(id, Party.THEM) != null;
+    }
+
+    public static boolean containsAnyExcept(String name) {
+        return Arrays.stream(getItemComponents()).anyMatch(comp -> !StringCommons.replaceColorTag(comp.getName()).equals(name));
+    }
+
+    public static boolean containsAnyExcept(int id) {
+        return Arrays.stream(getItemComponents()).anyMatch(comp -> comp.getItemID() != id);
+    }
 
 
     private static final String FIRST_SCREEN_TRADER_NAME_PREFIX = "Trading With: ";
@@ -188,6 +276,7 @@ public class Trade {
         }
         return null;
     }
+
 
     private static final String[] FIRST_SCREEN_MY_OFFER_PRICE_PREFIXES = new String[] {"Your offer:", "You offer:"};
     private static final InterfaceAddress FIRST_SCREEN_MY_OFFER_PRICE = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, comp ->
@@ -222,68 +311,4 @@ public class Trade {
         }
         return -1;
     }
-
-
-
-//    public static List<RSItemDefinition> getAllItemDefinitions() {
-//        List<RSItemDefinition> itemDefinitions = new ArrayList<>();
-//        itemDefinitions.addAll(getItemDefinitions(false));
-//        itemDefinitions.addAll(getItemDefinitions(true));
-//        return itemDefinitions;
-//    }
-
-
-//    public static List<RSItemDefinition> getItemDefinitions(boolean theirItems) {
-//        if (Trade.isOpen(Screen.FIRST)) {
-//            return getFirstTradeScreenDefinitions(theirItems);
-//        }
-//        if (Trade.isOpen(Screen.SECOND)) {
-//            return getSecondTradeScreenDefinitions(theirItems);
-//        }
-//        return new ArrayList<>();
-//    }
-
-
-//    private static List<RSItemDefinition> getFirstTradeScreenDefinitions(boolean theirItems) {
-//        List<RSItemDefinition> itemDefinitions = new ArrayList<>();
-//        Item[] items = theirItems ? Trade.getTheirItems() : Trade.getMyItems(); // TODO: Fix
-//        for (Item item : items) {
-//            RSItemDefinition itemDefinition = Definitions.getItem(item.getID());
-//            if (itemDefinition != null) {
-//                itemDefinitions.add(itemDefinition);
-//            }
-//        }
-//        return itemDefinitions;
-//    }
-//
-//    private static final int SECOND_SCREEN_MY_ITEMS_INDEX = 28;
-//    private static final int SECOND_SCREEN_THEIR_ITEMS_INDEX = 29;
-//    private static final InterfaceAddress SECOND_SCREEN_MY_ITEMS = new InterfaceAddress(SECOND_TRADE_WINDOW_PARENT_INDEX, comp ->
-//            comp.getChildIndex() == SECOND_SCREEN_MY_ITEMS_INDEX); // comp != null &&
-//    private static final InterfaceAddress SECOND_SCREEN_THEIR_ITEMS = new InterfaceAddress(SECOND_TRADE_WINDOW_PARENT_INDEX, comp ->
-//            comp.getChildIndex() == SECOND_SCREEN_THEIR_ITEMS_INDEX); // comp != null &&
-
-//    private static List<RSItemDefinition> getSecondTradeScreenDefinitions(boolean theirItems) {
-//        List<RSItemDefinition> itemDefinitions = new ArrayList<>();
-//        InterfaceComponent itemContainerComp = theirItems ? SECOND_SCREEN_MY_ITEMS.lookup() : SECOND_SCREEN_THEIR_ITEMS.lookup();
-//        if (itemContainerComp == null) {
-//            return itemDefinitions;
-//        }
-//        InterfaceComponent[] itemComps = itemContainerComp.getChildren();
-//        if (itemComps == null) {
-//            return itemDefinitions;
-//        }
-//        for (InterfaceComponent itemComp : itemComps) {
-//            String itemText = itemComp.getText();
-//            if (itemText == null) {
-//                continue;
-//            }
-//            String itemName = (itemText.contains("<")) ? itemText.substring(0, itemText.indexOf('<')) : itemText;
-//            RSItemDefinition itemDefinition = null; //Definitions.getItem(itemName, a->true); // TODO: Fix
-//            if (itemDefinition != null) {
-//                itemDefinitions.add(itemDefinition);
-//            }
-//        }
-//        return itemDefinitions;
-//    }
 }

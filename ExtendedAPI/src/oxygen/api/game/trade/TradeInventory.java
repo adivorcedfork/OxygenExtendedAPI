@@ -5,6 +5,8 @@ import oxygen.api.accessors.Interfaces;
 import oxygen.api.commons.StringCommons;
 import oxygen.api.wrappers.InterfaceComponent;
 
+import java.util.Arrays;
+
 public class TradeInventory {
 
     private static final int TRADE_INVENTORY_GROUP = 336;
@@ -13,7 +15,7 @@ public class TradeInventory {
     private static InterfaceComponent[] getTradeInventory() {
         InterfaceComponent parent = TRADE_INVENTORY_ADDRESS.lookup();
         if (parent != null) {
-            return parent.getChildren();
+            return Arrays.stream(parent.getChildren()).filter(comp -> comp.getItemID() != -1).toArray(InterfaceComponent[]::new);
         }
         return new InterfaceComponent[0];
     }
