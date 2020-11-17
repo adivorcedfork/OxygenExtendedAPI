@@ -173,7 +173,7 @@ public class Trade {
         InterfaceComponent parent = party == Party.ME ? OUR_OFFER_ITEMS.lookup() : THEIR_OFFER_ITEMS.lookup();
         if (parent != null) {
             return Arrays.stream(parent.getChildren())
-                    .filter(comp -> comp.getItemID() != -1 && comp.isVisible() && comp.exists())
+                    .filter(comp -> comp.getItemID() != -1 && comp.exists() && comp.isVisible())
                     .toArray(InterfaceComponent[]::new);
         }
         return new InterfaceComponent[0];
@@ -290,7 +290,7 @@ public class Trade {
     public static String getTheirName() {
         InterfaceComponent traderNameComp = Trade.isOpen(Screen.FIRST) ? FIRST_SCREEN_TRADER_NAME.lookup() : SECOND_SCREEN_TRADER_NAME.lookup();
         String prefix = Trade.isOpen(Screen.FIRST) ? FIRST_SCREEN_TRADER_NAME_PREFIX : SECOND_SCREEN_TRADER_NAME_PREFIX;
-        if (traderNameComp != null && traderNameComp.isVisible() && traderNameComp.exists()) {
+        if (traderNameComp != null && traderNameComp.exists() && traderNameComp.isVisible()) {
             return StringCommons.replaceColorTag(traderNameComp.getText()).replaceAll(prefix, "").trim();
         }
         return null;
