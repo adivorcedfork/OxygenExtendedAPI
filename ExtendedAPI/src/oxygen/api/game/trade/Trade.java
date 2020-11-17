@@ -86,29 +86,32 @@ public class Trade {
     }
 
 
-    // TODO: Do by InterfaceAddress instead of predicate? InterfaceAddress didn't update before. Do by checking comp.getText(message)?
-    private static final Predicate<InterfaceComponent> FIRST_SCREEN_WE_ACCEPTED_PRED = comp ->
-            comp.getText().equals("Waiting for other player...");
+    private static final String WE_ACCEPTED_MESSAGE = "Waiting for other player...";
+    private static final String THEY_ACCEPTED_MESSAGE = "Other player has accepted.";
 
-    private static final Predicate<InterfaceComponent> FIRST_SCREEN_THEY_ACCEPTED_PRED = comp ->
-            comp.getText().equals("Other player has accepted.");
+    private static final InterfaceAddress FIRST_SCREEN_WE_ACCEPTED = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, comp ->
+            comp.getText().equals(WE_ACCEPTED_MESSAGE));
 
-    private static final Predicate<InterfaceComponent> SECOND_SCREEN_WE_ACCEPTED_PRED = comp ->
-            comp.getText().equals("Waiting for other player...");
+    private static final InterfaceAddress FIRST_SCREEN_THEY_ACCEPTED = new InterfaceAddress(FIRST_TRADE_WINDOW_GROUP, comp ->
+            comp.getText().equals(THEY_ACCEPTED_MESSAGE));
 
-    private static final Predicate<InterfaceComponent> SECOND_SCREEN_THEY_ACCEPTED_PRED = comp ->
-            comp.getText().equals("Other player has accepted.");
+    private static final InterfaceAddress SECOND_SCREEN_WE_ACCEPTED = new InterfaceAddress(SECOND_TRADE_WINDOW_GROUP, comp ->
+            comp.getText().equals(WE_ACCEPTED_MESSAGE));
+
+    private static final InterfaceAddress SECOND_SCREEN_THEY_ACCEPTED = new InterfaceAddress(SECOND_TRADE_WINDOW_GROUP, comp ->
+            comp.getText().equals(THEY_ACCEPTED_MESSAGE));
 
     public static boolean hasAccepted(Party party) {
+        String acceptedText = party == Party.ME ? WE_ACCEPTED_MESSAGE : THEY_ACCEPTED_MESSAGE;
+        InterfaceComponent acceptedComp = null;
         if (Trade.isOpen(Screen.FIRST)) {
-            return Interfaces.getComponent(FIRST_TRADE_WINDOW_GROUP, party == Party.ME ? FIRST_SCREEN_WE_ACCEPTED_PRED : FIRST_SCREEN_THEY_ACCEPTED_PRED) != null;
+            acceptedComp = party == Party.ME ? FIRST_SCREEN_WE_ACCEPTED.lookup() : FIRST_SCREEN_THEY_ACCEPTED.lookup();
         }
         else if (Trade.isOpen(Screen.SECOND)) {
-            return Interfaces.getComponent(SECOND_TRADE_WINDOW_GROUP, party == Party.ME ? SECOND_SCREEN_WE_ACCEPTED_PRED : SECOND_SCREEN_THEY_ACCEPTED_PRED) != null;
+            acceptedComp = party == Party.ME ? SECOND_SCREEN_WE_ACCEPTED.lookup() : SECOND_SCREEN_THEY_ACCEPTED.lookup();
         }
-        return false;
+        return acceptedComp != null && acceptedComp.exists() && acceptedComp.isVisible() && acceptedComp.getText().equals(acceptedText);
     }
-
 
     private static final String INVENTORY_ITEM_ACTION_TAG = "<col=ff9040>"; // TODO: Do this better
 
@@ -170,7 +173,7 @@ public class Trade {
         InterfaceComponent parent = party == Party.ME ? OUR_OFFER_ITEMS.lookup() : THEIR_OFFER_ITEMS.lookup();
         if (parent != null) {
             return Arrays.stream(parent.getChildren())
-                    .filter(comp -> comp.getItemID() != -1)
+                    .filter(comp -> comp.getItemID() != -1 && comp.isVisible() && comp.exists())
                     .toArray(InterfaceComponent[]::new);
         }
         return new InterfaceComponent[0];
@@ -251,12 +254,28 @@ public class Trade {
         return getItemComponent(id, Party.ME) != null || getItemComponent(id, Party.THEM) != null;
     }
 
+    public static boolean contains(String name, Party party) {
+        return getItemComponent(name, party) != null;
+    }
+
+    public static boolean contains(int id, Party party) {
+        return getItemComponent(id, party) != null;
+    }
+
     public static boolean containsAnyExcept(String name) {
         return Arrays.stream(getItemComponents()).anyMatch(comp -> !StringCommons.replaceColorTag(comp.getName()).equals(name));
     }
 
     public static boolean containsAnyExcept(int id) {
         return Arrays.stream(getItemComponents()).anyMatch(comp -> comp.getItemID() != id);
+    }
+
+    public static boolean containsAnyExcept(String name, Party party) {
+        return Arrays.stream(getItemComponents(party)).anyMatch(comp -> !StringCommons.replaceColorTag(comp.getName()).equals(name));
+    }
+
+    public static boolean containsAnyExcept(int id, Party party) {
+        return Arrays.stream(getItemComponents(party)).anyMatch(comp -> comp.getItemID() != id);
     }
 
 
@@ -271,7 +290,7 @@ public class Trade {
     public static String getTheirName() {
         InterfaceComponent traderNameComp = Trade.isOpen(Screen.FIRST) ? FIRST_SCREEN_TRADER_NAME.lookup() : SECOND_SCREEN_TRADER_NAME.lookup();
         String prefix = Trade.isOpen(Screen.FIRST) ? FIRST_SCREEN_TRADER_NAME_PREFIX : SECOND_SCREEN_TRADER_NAME_PREFIX;
-        if (traderNameComp != null && traderNameComp.isVisible()) {
+        if (traderNameComp != null && traderNameComp.isVisible() && traderNameComp.exists()) {
             return StringCommons.replaceColorTag(traderNameComp.getText()).replaceAll(prefix, "").trim();
         }
         return null;
