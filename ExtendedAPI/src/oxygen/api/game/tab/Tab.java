@@ -6,20 +6,20 @@ import static oxygen.api.game.Constant.FIXED_VIEWPORT_GROUP;
 import static oxygen.api.game.Constant.RESIZED_VIEWPORT_GROUP;
 
 public enum Tab {
-    COMBAT_OPTIONS("Combat Options"),
+    COMBAT("Combat Options"),
     SKILLS("Skills"),
-    QUEST_LIST("Quest List"),
+    QUESTS("Quest List"),
     INVENTORY("Inventory"),
-    EQUIPMENT("Equipment"),
+    EQUIPMENT("Worn Equipment"),
     PRAYER("Prayer"),
     MAGIC("Magic"),
     CLAN_CHAT("Clan Chat"),
-    FRIENDS_LIST("Friends List"),
+    FRIENDS("Friends List"),
     ACCOUNT_MANAGEMENT("Account Management"),
     LOGOUT("Logout"),
     OPTIONS("Options"),
     EMOTES("Emotes"),
-    MUSIC_PLAYER("Music Player");
+    MUSIC("Music Player");
 
     private final String action;
     private final InterfaceAddress fixedAddress;
