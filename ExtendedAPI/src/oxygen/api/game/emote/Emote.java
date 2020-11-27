@@ -3,24 +3,26 @@ package oxygen.api.game.emote;
 import oxygen.api.InterfaceAddress;
 import oxygen.api.wrappers.InterfaceComponent;
 
+import static oxygen.api.game.Constant.EMOTES_GROUP;
+import static oxygen.api.game.Constant.EMOTES_SUBGROUP;
+
 public enum Emote {
+    BOW("Bow", new InterfaceAddress(EMOTES_GROUP, EMOTES_SUBGROUP, 2)),
+    CRY("Cry", new InterfaceAddress(EMOTES_GROUP, EMOTES_SUBGROUP, 16)),
+    CHEER("Cheer", new InterfaceAddress(EMOTES_GROUP, EMOTES_SUBGROUP, 7)),
+    SHRUG("Shrug", new InterfaceAddress(EMOTES_GROUP, EMOTES_SUBGROUP, 6)),
+    DANCE("Dance", new InterfaceAddress(EMOTES_GROUP, EMOTES_SUBGROUP, 12));
 
-    BOW("Bow", new InterfaceAddress(216, 1, 2)),
-    CRY("Cry", new InterfaceAddress(216, 1, 16)),
-    CHEER("Cheer", new InterfaceAddress(216, 1, 7)),
-    SHRUG("Shrug", new InterfaceAddress(216, 1, 6)),
-    DANCE("Dance", new InterfaceAddress(216, 1, 12));
-
-    private final String name;
+    private final String action;
     private final InterfaceAddress address;
 
-    Emote(String name, InterfaceAddress address) {
-        this.name = name;
+    Emote(String action, InterfaceAddress address) {
+        this.action = action;
         this.address = address;
     }
 
-    public String getName() {
-        return name;
+    public String getAction() {
+        return action;
     }
 
     public InterfaceComponent getComponent() {
