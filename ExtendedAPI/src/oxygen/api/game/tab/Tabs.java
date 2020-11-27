@@ -15,12 +15,6 @@ public class Tabs {
 
     public static boolean open(Tab tab) {
         InterfaceComponent tabComp = getComponentByViewport(tab);
-        if (tabComp == null) {
-            System.out.println("!!!! CAN'T FIND TAB COMP FOR " + tab.name()); // TODO: Remove
-        }
-        if (tabComp != null && !tabComp.exists()) {
-            System.out.println("!!!! TAB COMP DOES NOT EXIST " + tab.name()); // TODO: Remove
-        }
         return tabComp != null && tabComp.exists() && tabComp.interact(tab.getAction());
     }
 
