@@ -12,13 +12,23 @@ import java.util.Arrays;
 public class ExDialog {
 
     private static final int DIALOG_GROUP = 219;
+    private static final int SECONDARY_DIALOG_GROUP = 217;
 
-    public static boolean isOpen() {
+    private static boolean isPrimaryOpen() {
         return Interfaces.isOpen(DIALOG_GROUP);
     }
 
+    private static boolean isSecondaryOpen() {
+        return Interfaces.isOpen(SECONDARY_DIALOG_GROUP);
+    }
+
+    public static boolean isOpen() {
+        return isPrimaryOpen() || isSecondaryOpen();
+    }
+
     public static boolean isViewingChatOptions() {
-        return isOpen() && Interfaces.getComponent(DIALOG_GROUP).length > 0;
+        return (isPrimaryOpen() && Interfaces.getComponent(DIALOG_GROUP).length > 0)
+                || (isSecondaryOpen() && Interfaces.getComponent(SECONDARY_DIALOG_GROUP).length > 0);
     }
 
     public static boolean process(String... options) {
