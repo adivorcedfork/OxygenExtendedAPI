@@ -6,7 +6,16 @@ import oxygen.api.wrappers.InterfaceComponent;
 
 public class Tabs {
 
-    // private static final int TAB_OPEN_MATERIAL_ID = 1030;
+    private static final int TAB_OPEN_MATERIAL_ID = 1030;
+
+    public static Tab getOpen() {
+        for (Tab tab : Tab.values()) {
+            if (isOpen(tab)) {
+                return tab;
+            }
+        }
+        return null;
+    }
 
     public static boolean isOpen(Tab tab) {
         InterfaceComponent tabComp = getComponentByViewport(tab);
