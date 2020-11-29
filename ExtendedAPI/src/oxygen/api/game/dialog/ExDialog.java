@@ -5,6 +5,7 @@ import oxygen.api.accessors.Interfaces;
 import oxygen.api.action.ActionOpcode;
 import oxygen.api.action.MenuAction;
 import oxygen.api.events.InterfaceInteractEvent;
+import oxygen.api.util.Input;
 import oxygen.api.wrappers.InterfaceComponent;
 
 import java.util.Arrays;
@@ -51,6 +52,15 @@ public class ExDialog {
     }
 
     public static boolean process(int index) {
+        return process(index, false);
+    }
+
+    public static boolean process(int index, boolean click) {
+        if (!click) {
+            Input.typeText(String.valueOf(index + 1), false);
+            return true;
+        }
+
         InterfaceComponent[] optionComps = Interfaces.getComponent(DIALOG_GROUP);
         InterfaceComponent childOptionsContainer = Interfaces.getComponent(DIALOG_GROUP, 1);
         InterfaceComponent targetOptionComp = null;
