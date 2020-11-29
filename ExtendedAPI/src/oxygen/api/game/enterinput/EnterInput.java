@@ -9,7 +9,7 @@ public class EnterInput {
     private static final int ENTER_INPUT_GROUP = 162; // Child component = 44
 
     private static final InterfaceAddress ENTER_INPUT_TEXT = new InterfaceAddress(ENTER_INPUT_GROUP, comp ->
-            comp.getText().equals("Enter amount:"));
+            comp.getText().contains("*"));
 
     public static boolean isOpen() {
         InterfaceComponent enterInputComp = ENTER_INPUT_TEXT.lookup();
