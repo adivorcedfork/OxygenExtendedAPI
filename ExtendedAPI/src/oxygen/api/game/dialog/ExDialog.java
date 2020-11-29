@@ -1,6 +1,10 @@
 package oxygen.api.game.dialog;
 
+import oxygen.api.Dialog;
 import oxygen.api.accessors.Interfaces;
+import oxygen.api.action.ActionOpcode;
+import oxygen.api.action.MenuAction;
+import oxygen.api.events.InterfaceInteractEvent;
 import oxygen.api.wrappers.InterfaceComponent;
 
 public class ExDialog {
@@ -12,11 +16,13 @@ public class ExDialog {
     }
 
     public static boolean process(String... options) {
+        MenuAction dialogAction = (new MenuAction()).setOpcode(ActionOpcode.INTERFACE_DIALOG).setPrimary(0).setAction("Continue");
         for (String option : options) {
             InterfaceComponent optionComp = Interfaces.getComponent(DIALOG_GROUP, comp ->
                     comp.hasText(option));
-            if (optionComp != null && optionComp.getActions().length > 0) {
-                return optionComp.interact(optionComp.getActions()[0]);
+            if (optionComp != null) {
+                new InterfaceInteractEvent(optionComp, dialogAction).setCompleteCondition(Dialog::isProcessing).execute();
+                return true;
             }
         }
         return false;
@@ -27,9 +33,11 @@ public class ExDialog {
         if (optionComps.length <= index) {
             return false;
         }
+        MenuAction dialogAction = (new MenuAction()).setOpcode(ActionOpcode.INTERFACE_DIALOG).setPrimary(0).setAction("Continue");
         InterfaceComponent targetOptionComp = optionComps[index];
-        if (targetOptionComp != null && targetOptionComp.getActions().length > 0) {
-            return targetOptionComp.interact(targetOptionComp.getActions()[0]);
+        if (targetOptionComp != null) {
+            new InterfaceInteractEvent(targetOptionComp, dialogAction).setCompleteCondition(Dialog::isProcessing).execute();
+            return true;
         }
         return false;
     }
