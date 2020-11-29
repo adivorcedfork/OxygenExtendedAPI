@@ -18,7 +18,7 @@ public class ExDialog {
     }
 
     public static boolean isViewingChatOptions() {
-        return Interfaces.getComponent(DIALOG_GROUP).length > 0;
+        return isOpen() && Interfaces.getComponent(DIALOG_GROUP).length > 0;
     }
 
     public static boolean process(String... options) {
