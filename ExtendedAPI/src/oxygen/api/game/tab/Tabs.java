@@ -19,16 +19,17 @@ public class Tabs {
 
     public static boolean isOpen(Tab tab) {
         InterfaceComponent tabComp = getComponentByViewport(tab);
-        return tabComp != null && tabComp.exists() && tabComp.getSpriteID2() >= 0;
+        return tabComp != null && tabComp.exists() && tabComp.isVisible() && tabComp.getSpriteID2() >= 0;
     }
 
     public static boolean open(Tab tab) {
         InterfaceComponent tabComp = getComponentByViewport(tab);
-        return tabComp != null && tabComp.exists() && tabComp.interact(tab.getAction());
+        return tabComp != null && tabComp.exists() && tabComp.isVisible() && tabComp.interact(tab.getAction());
     }
 
     public static boolean exists(Tab tab) {
-        return getComponentByViewport(tab) != null;
+        InterfaceComponent tabComp = getComponentByViewport(tab);
+        return getComponentByViewport(tab) != null && tabComp.exists() && tabComp.isVisible();
     }
 
     private static InterfaceComponent getComponentByViewport(Tab tab) {
