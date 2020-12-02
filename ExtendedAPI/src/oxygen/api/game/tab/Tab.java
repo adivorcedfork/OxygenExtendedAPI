@@ -17,7 +17,7 @@ public enum Tab {
     FRIENDS_LIST("Friends List"),
     ACCOUNT_MANAGEMENT("Account Management"),
     LOGOUT("Logout"),
-    OPTIONS("Options"),
+    OPTIONS("Settings"),
     EMOTES("Emotes"),
     MUSIC("Music Player");
 
