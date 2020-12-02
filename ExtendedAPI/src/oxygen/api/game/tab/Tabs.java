@@ -27,6 +27,10 @@ public class Tabs {
         return tabComp != null && tabComp.exists() && tabComp.interact(tab.getAction());
     }
 
+    public static boolean exists(Tab tab) {
+        return getComponentByViewport(tab) != null;
+    }
+
     private static InterfaceComponent getComponentByViewport(Tab tab) {
         if (Viewports.isOpen(Viewport.FIXED)) {
             return tab.getFixedAddress().lookup();
